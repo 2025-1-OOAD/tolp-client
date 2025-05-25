@@ -4,9 +4,56 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { getUserRole } from '@/hooks/getUserRole'
+import { useEffect, useState } from 'react'
+
+function getUserRoleFromToken() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) {
+    console.log('[Token] 토큰 없음')
+    return null
+
+  }  
+
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join('')
+    )
+    const parsed = JSON.parse(jsonPayload)
+    console.log('[Token] payload: ', parsed)
+    return parsed.role
+  } catch (e) {
+    console.error('[Token] 디코딩 실패: ', e)
+    return null
+  }
+}
 
 export default function Header() {
   const { isLoggedIn } = useAuth()
+  const router = useRouter()
+  const [role, setRole] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const r = getUserRoleFromToken()
+    console.log('[Header] 추출된 role: ', r)
+    setRole(r)
+    setLoading(false)
+  }, [])
+
+  console.log('[Header] 렌더링 상태: isLoggedIn =', isLoggedIn, ', role =', role, ', loading =', loading)
+
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    alert('로그아웃 되었습니다.')
+    router.push('/login')
+  }
 
   return (
     <header className="bg-white shadow-sm border-b border-purple-100">
@@ -19,7 +66,7 @@ export default function Header() {
             </Link>
           </div>
 
-          {isLoggedIn && (
+          {!loading && isLoggedIn && (
             <nav className="hidden md:flex space-x-8">
               <Link href="/" className="text-gray-600 hover:text-purple-900">
                 홈
@@ -36,6 +83,13 @@ export default function Header() {
               <Link href="/mypage" className="text-gray-600 hover:text-purple-900">
                 마이페이지
               </Link>
+
+              {/* 👇 INSTRUCTOR 전용 메뉴 */}
+              {role === 'INSTRUCTOR' && (
+                <Link href="/create-lecture" className="text-purple-700 font-semibold hover:underline">
+                  강의 개설
+                </Link>
+              )}
             </nav>
           )}
 
@@ -55,11 +109,14 @@ export default function Header() {
               </>
             )}
             {isLoggedIn && (
-              <Link href="/logout">
-                <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                  로그아웃
-                </Button>
-              </Link>
+            
+            <Button 
+                variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                onClick={handleLogout}
+            >
+                로그아웃
+            </Button>
+              
             )}
           </div>
         </div>

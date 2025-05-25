@@ -17,12 +17,23 @@ export default function LoginPage() {
     try {
       const res = await axios.post('http://localhost:8080/api/users/login', { email, password })
       localStorage.setItem('token', res.data.token)
+      // ✅ 콘솔에 토큰 출력
+      console.log('로그인 성공! 받은 토큰:', res.data)
+      console.log('localStorage에서 읽은 토큰:', localStorage.getItem('token'))
       alert('로그인 성공!')
       router.push('/mypage')
     } catch (err) {
       alert('로그인 실패. 다시 시도해주세요.')
+      console.error('로그인 에러:', err)
     }
   }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token') // 클라이언트에서 토큰 삭제
+    alert('로그아웃 되었습니다.')
+    router.push('/login')
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-white">

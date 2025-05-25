@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Clock, Search, Star, Users, Video, Calendar, CheckSquare } from "lucide-react"
 import Link from "next/link"
+import Header from "@/components/Header"
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,43 +48,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <BookOpen className="h-8 w-8 text-purple-600" />
-              <h1 className="text-2xl font-bold text-purple-900">EduPlatform</h1>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-purple-700 hover:text-purple-900 font-medium">
-                홈
-              </Link>
-              <Link href="/courses" className="text-gray-600 hover:text-purple-900">
-                강의목록
-              </Link>
-              <Link href="/schedule" className="text-gray-600 hover:text-purple-900">
-                시간표
-              </Link>
-              <Link href="/todo" className="text-gray-600 hover:text-purple-900">
-                투두리스트
-              </Link>
-              <Link href="/mypage" className="text-gray-600 hover:text-purple-900">
-                마이페이지
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                  로그인
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="bg-purple-600 hover:bg-purple-700">회원가입</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header/>
 
       {/* Hero Section */}
       <section className="py-20 px-4">
