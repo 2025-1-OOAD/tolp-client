@@ -8,8 +8,29 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BookOpen, Clock, Search, Star, Users, Video } from "lucide-react"
 import Link from "next/link"
+import { useAuthRedirect } from '@/hooks/use-auth-redirect'
+import { useRouter } from 'next/navigation'
+import Header from "@/components/Header"
+import { useEffect } from 'react'
 
 export default function CoursesPage() {
+
+  const router = useRouter()
+  // useAuthRedirect() // 로그인 안 되어 있으면 /login으로 보내버림
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      router.push('/login')
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    alert('로그아웃 되었습니다.')
+    router.push('/login')
+  }
+    
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedLevel, setSelectedLevel] = useState("all")
@@ -102,41 +123,7 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <BookOpen className="h-8 w-8 text-purple-600" />
-                <h1 className="text-2xl font-bold text-purple-900">EduPlatform</h1>
-              </Link>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-purple-900">
-                홈
-              </Link>
-              <Link href="/courses" className="text-purple-700 hover:text-purple-900 font-medium">
-                강의목록
-              </Link>
-              <Link href="/schedule" className="text-gray-600 hover:text-purple-900">
-                시간표
-              </Link>
-              <Link href="/todo" className="text-gray-600 hover:text-purple-900">
-                투두리스트
-              </Link>
-              <Link href="/mypage" className="text-gray-600 hover:text-purple-900">
-                마이페이지
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                로그인
-              </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700">회원가입</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header/>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}

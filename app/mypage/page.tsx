@@ -11,8 +11,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { BookOpen, User, Settings, LogOut, Edit, Star, Award, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useAuthRedirect } from '@/hooks/use-auth-redirect'
+import { useRouter } from 'next/navigation'
 
 export default function MyPage() {
+
+  const router = useRouter()
+  useAuthRedirect() // 로그인 안 되어 있으면 /login으로 보내버림
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    alert('로그아웃 되었습니다.')
+    router.push('/login')
+  }
+
+
+
   const [isEditing, setIsEditing] = useState(false)
   const [userInfo, setUserInfo] = useState({
     name: "김학생",
@@ -124,10 +138,22 @@ export default function MyPage() {
               </Link>
             </nav>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                <LogOut className="h-4 w-4 mr-2" />
-                로그아웃
-              </Button>
+              <Link href="/login">
+                <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                  로그인
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  로그아웃
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="bg-purple-600 hover:bg-purple-700">회원가입</Button>
+              </Link>
             </div>
           </div>
         </div>

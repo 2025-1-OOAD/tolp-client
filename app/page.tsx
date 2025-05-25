@@ -72,10 +72,14 @@ export default function HomePage() {
               </Link>
             </nav>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                로그인
-              </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700">회원가입</Button>
+              <Link href="/login">
+                <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                  로그인
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="bg-purple-600 hover:bg-purple-700">회원가입</Button>
+              </Link>
             </div>
           </div>
         </div>
