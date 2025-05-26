@@ -31,7 +31,7 @@ export default function CreateLecturePage() {
     const token = localStorage.getItem('token')
     const instructorId = parseJwt(token)?.userId
 
-    const res = await fetch('http://localhost:8080/api/lectures/', {
+    const res = await fetch('http://localhost:8080/api/lectures', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
