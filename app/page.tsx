@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,41 +9,66 @@ import { BookOpen, Clock, Search, Star, Users, Video, Calendar, CheckSquare } fr
 import Link from "next/link"
 import Header from "@/components/Header"
 
+type Lecture = {
+  id: number
+  name: string
+  syllabus: string
+  durationDays: number
+  instructorName: string
+  createdAt: string
+}
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [lectures, setLectures] = useState<Lecture[]>([])
+  
+    useEffect(() => {
+      const fetchLectures = async () => {
+        try {
+          const res = await fetch("http://localhost:8080/api/lectures")
+          if (!res.ok) throw new Error("강의 목록 불러오기 실패")
+          const data: Lecture[] = await res.json()
+          setLectures(data)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+  
+      fetchLectures()
+    }, [])
 
-  const featuredCourses = [
-    {
-      id: 1,
-      title: "React 완전정복",
-      instructor: "김개발",
-      rating: 4.8,
-      students: 1234,
-      duration: "12시간",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      price: "₩89,000",
-    },
-    {
-      id: 2,
-      title: "Next.js 마스터클래스",
-      instructor: "박프론트",
-      rating: 4.9,
-      students: 856,
-      duration: "15시간",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      price: "₩120,000",
-    },
-    {
-      id: 3,
-      title: "TypeScript 기초부터 실전까지",
-      instructor: "이타입",
-      rating: 4.7,
-      students: 2341,
-      duration: "10시간",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-      price: "₩75,000",
-    },
-  ]
+  // const featuredCourses = [
+  //   {
+  //     id: 1,
+  //     title: "React 완전정복",
+  //     instructor: "김개발",
+  //     rating: 4.8,
+  //     students: 1234,
+  //     duration: "12시간",
+  //     thumbnail: "/placeholder.svg?height=200&width=300",
+  //     price: "₩89,000",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Next.js 마스터클래스",
+  //     instructor: "박프론트",
+  //     rating: 4.9,
+  //     students: 856,
+  //     duration: "15시간",
+  //     thumbnail: "/placeholder.svg?height=200&width=300",
+  //     price: "₩120,000",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "TypeScript 기초부터 실전까지",
+  //     instructor: "이타입",
+  //     rating: 4.7,
+  //     students: 2341,
+  //     duration: "10시간",
+  //     thumbnail: "/placeholder.svg?height=200&width=300",
+  //     price: "₩75,000",
+  //   },
+  // ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
@@ -111,8 +136,8 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCourses.map((course) => (
-              <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow border-purple-100">
+            {lectures.map((lecture) => (
+              <Card key={lecture.id} className="overflow-hidden hover:shadow-lg transition-shadow border-purple-100">
                 <div className="aspect-video bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
                   <Video className="h-12 w-12 text-purple-600" />
                 </div>
@@ -123,28 +148,28 @@ export default function HomePage() {
                     </Badge>
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium">{course.rating}</span>
+                      {/* <span className="text-sm font-medium">{lecture.rating}</span> */}
                     </div>
                   </div>
-                  <CardTitle className="text-lg text-purple-900">{course.title}</CardTitle>
-                  <CardDescription className="text-gray-600">{course.instructor}</CardDescription>
+                  <CardTitle className="text-lg text-purple-900">{lecture.name}</CardTitle>
+                  <CardDescription className="text-gray-600">{lecture.instructorName}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <div className="flex items-center space-x-1">
                         <Users className="h-4 w-4" />
-                        <span>{course.students.toLocaleString()}</span>
+                        {/* <span>{lecture.students.toLocaleString()}</span> */}
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{course.duration}</span>
+                        <span>{lecture.durationDays}</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-purple-900">{course.price}</span>
-                    <Button className="bg-purple-600 hover:bg-purple-700">수강신청</Button>
+                    {/* <span className="text-2xl font-bold text-purple-900">{lecture.price}</span> */}
+                    <Button className="bg-purple-600 hover:bg-purple-700">자세히 보기</Button>
                   </div>
                 </CardContent>
               </Card>
