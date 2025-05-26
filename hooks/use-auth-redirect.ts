@@ -14,7 +14,7 @@ export function useAuthRedirect() {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const res = await axios.get('http://localhost:8080/api/users/me', {
+      const res = await axios.get('http://localhost:8080/api/users/user-info', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
