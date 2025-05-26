@@ -71,7 +71,7 @@ export default function Header() {
               <Link href="/" className="text-gray-600 hover:text-purple-900">
                 홈
               </Link>
-              <Link href="/courses" className="text-gray-600 hover:text-purple-900">
+              <Link href="/lectures" className="text-gray-600 hover:text-purple-900">
                 강의목록
               </Link>
               <Link href="/schedule" className="text-gray-600 hover:text-purple-900">
