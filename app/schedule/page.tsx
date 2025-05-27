@@ -135,7 +135,7 @@ useEffect(() => {
   })
     .then((res) => res.json())
     .then((data) => {
-      setLectures(data.lectures); // API 응답 형식에 따라 다를 수 있음
+      setLectures(data.lectures || []); // API 응답 형식에 따라 다를 수 있음
     })
     .catch((err) => {
       console.error("시간표 불러오기 실패:", err);
