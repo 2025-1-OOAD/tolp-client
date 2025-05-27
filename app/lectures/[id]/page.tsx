@@ -8,6 +8,7 @@ import Header from '@/components/Header'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface Lecture {
   id: number
@@ -76,7 +77,7 @@ export default function LectureDetailPage() {
     try {
       const token = localStorage.getItem('token')
       await axios.post(
-        'http://localhost:8080/api/lecture-videos',
+        `http://localhost:8080/api/lecture-videos`,
         { ...newVideo, lectureId: Number(id) },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -105,6 +106,12 @@ export default function LectureDetailPage() {
             <p className="text-gray-700 mb-2">강의 설명: {lecture.syllabus}</p>
             <p className="text-gray-500">강사: {lecture.instructorName}</p>
             <p className="text-gray-500">수강 기간: {lecture.durationDays}일</p>
+
+            <div className="mt-4">
+              <Link href={`/lectures/${id}/qna`}>
+                <Button className="bg-purple-600 hover:bg-purple-700">질문 게시판</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
