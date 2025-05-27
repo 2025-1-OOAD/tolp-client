@@ -37,38 +37,6 @@ export default function HomePage() {
       fetchLectures()
     }, [])
 
-  // const featuredCourses = [
-  //   {
-  //     id: 1,
-  //     title: "React 완전정복",
-  //     instructor: "김개발",
-  //     rating: 4.8,
-  //     students: 1234,
-  //     duration: "12시간",
-  //     thumbnail: "/placeholder.svg?height=200&width=300",
-  //     price: "₩89,000",
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Next.js 마스터클래스",
-  //     instructor: "박프론트",
-  //     rating: 4.9,
-  //     students: 856,
-  //     duration: "15시간",
-  //     thumbnail: "/placeholder.svg?height=200&width=300",
-  //     price: "₩120,000",
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "TypeScript 기초부터 실전까지",
-  //     instructor: "이타입",
-  //     rating: 4.7,
-  //     students: 2341,
-  //     duration: "10시간",
-  //     thumbnail: "/placeholder.svg?height=200&width=300",
-  //     price: "₩75,000",
-  //   },
-  // ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
@@ -231,7 +199,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-4 mb-6">
             <BookOpen className="h-8 w-8" />
-            <h3 className="text-2xl font-bold">EduPlatform</h3>
+            <h3 className="text-2xl font-bold">Tolp</h3>
           </div>
           <p className="text-purple-200 mb-6">최고의 온라인 학습 경험을 제공합니다</p>
           <div className="flex justify-center space-x-8 text-sm text-purple-200">
