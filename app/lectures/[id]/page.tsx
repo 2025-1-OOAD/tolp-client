@@ -29,9 +29,15 @@ export default function LectureDetailPage() {
   const { id } = useParams()
   const { isLoggedIn } = useAuth()
   const [role, setRole] = useState<string | null>(null)
+  const [instructorName, setInstructorName] = useState<string | null>(null)
   const [lecture, setLecture] = useState<Lecture | null>(null)
   const [videos, setVideos] = useState<Video[]>([])
   const [newVideo, setNewVideo] = useState({ title: '', videoUrl: '' })
+  const [isEnrolled, setIsEnrolled] = useState(false)
+  const [isInstructorOfLecture, setIsInstructorOfLecture] = useState(false)
+
+
+
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -39,9 +45,11 @@ export default function LectureDetailPage() {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]))
         setRole(payload.role || null)
+        setInstructorName(payload.sub || null)
       } catch (e) {
         console.error('토큰 파싱 실패:', e)
         setRole(null)
+        setInstructorName(null)
       }
     }
   }, [])
@@ -70,6 +78,49 @@ export default function LectureDetailPage() {
       fetchVideos()
     }
   }, [id])
+
+  // 수강 여부 확인
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await axios.get(`http://localhost:8080/api/enrollments/myLectures`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const enrolledLectures = res.data
+        setIsEnrolled(enrolledLectures.some((e: any) => e.lectureName === lecture?.name))
+      } catch (err) {
+        console.error('수강 여부 확인 실패:', err)
+      }
+    }
+
+    if (lecture) checkEnrollment()
+  }, [lecture])
+
+
+  // 강사가 본인 강의인지 여부 확인
+  useEffect(() => {
+    if (lecture && instructorName) {
+      setIsInstructorOfLecture(lecture.instructorName === instructorName)
+    }
+  }, [lecture, instructorName])
+
+  // 수강 신청 요청
+  const handleEnroll = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      await axios.post(
+        'http://localhost:8080/api/enrollments',
+        { lectureId: lecture?.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      alert('수강신청이 완료되었습니다.')
+      setIsEnrolled(true)
+    } catch (err) {
+      console.error('수강신청 실패:', err)
+      alert('수강신청 실패')
+    }
+  }
 
   const handleVideoUpload = async () => {
     if (!newVideo.title || !newVideo.videoUrl) return alert('제목과 URL을 입력하세요.')
@@ -108,7 +159,13 @@ export default function LectureDetailPage() {
           </CardContent>
         </Card>
 
-        {role === 'INSTRUCTOR' && (
+        {!isEnrolled && role === 'STUDENT' && (
+          <Button onClick={handleEnroll} className="bg-blue-500 hover:bg-blue-600 text-white mb-6">
+            수강신청하기
+          </Button>
+        )}
+
+        {role === 'INSTRUCTOR' && isInstructorOfLecture && (
           <Card className="mb-8 border-purple-300">
             <CardHeader>
               <CardTitle className="text-lg">영상 업로드</CardTitle>
@@ -139,15 +196,19 @@ export default function LectureDetailPage() {
                 <CardTitle className="text-purple-900">{video.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <iframe
-                  src={video.videoUrl}
-                  title={video.title}
-                  width="100%"
-                  height="315"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+                {(isEnrolled || isInstructorOfLecture ) ? (
+                  <iframe
+                    src={video.videoUrl}
+                    title={video.title}
+                    width="100%"
+                    height="315"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <p className="text-red-500">※ 이 영상은 수강신청 후 열람 가능합니다.</p>
+                )}
               </CardContent>
             </Card>
           ))}

@@ -31,20 +31,20 @@ const daysOfWeek = ["월", "화", "수", "목", "금", "토", "일"];
 export default function SchedulePage() {
   const router = useRouter();
   const [userId] = useState<number>(1); // 추후 JWT에서 추출
-  // const [lectureList, setLectureList] = useState<LectureInfo[]>([]);
-  // const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [lectureList, setLectureList] = useState<LectureInfo[]>([]);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
 
   // dummy data
-  const [lectureList, setLectureList] = useState<LectureInfo[]>([
-    { id: 101, title: "운영체제", durationDays: 30 },
-    { id: 102, title: "객체지향분석및설계", durationDays: 40 },
-    { id: 103, title: "데이터베이스", durationDays: 10 },
-  ]);
-  const [lectures, setLectures] = useState<Lecture[]>([{
-    userId: 1,
-    lectureId: 101,
-    customTime: "월 11:00-12:30"
-  }]);
+  // const [lectureList, setLectureList] = useState<LectureInfo[]>([
+  //   { id: 101, title: "운영체제", durationDays: 30 },
+  //   { id: 102, title: "객체지향분석및설계", durationDays: 40 },
+  //   { id: 103, title: "데이터베이스", durationDays: 10 },
+  // ]);
+  // const [lectures, setLectures] = useState<Lecture[]>([{
+  //   userId: 1,
+  //   lectureId: 101,
+  //   customTime: "월 11:00-12:30"
+  // }]);
   const [selectedLectureId, setSelectedLectureId] = useState<number>(0);
   const [selectedDay, setSelectedDay] = useState<string>("")
   const [startTime, setStartTime] = useState<string>("")
@@ -60,40 +60,106 @@ export default function SchedulePage() {
 
   useEffect(() => {
     // 수강 중인 강의 목록 불러오기
-    fetch("/api/lectures", {
+    fetch("http://localhost:8080/api/enrollments/myLectures", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     })
-      .then((res) => res.json())
-      .then((data) => setLectureList(data));
+      .then((res) => {
+        if (!res.ok) throw new Error("수강 강의 목록 조회 실패");
+        return res.json(); 
+      })
+      .then((data) => {
+      const formatted: LectureInfo[] = data.map((e: any) => ({
+        id: e.id, // 수강 신청 ID가 아닌 강의 ID여야 한다면 e.lectureId로 바꾸기
+        title: e.lectureName,
+        durationDays: Math.ceil(
+          (new Date(e.accessDeadline).getTime() - new Date(e.enrollmentDate).getTime()) / (1000 * 60 * 60 * 24)
+        ),
+      }))
+      setLectureList(formatted)
+    })
+    .catch((err) => {
+      console.error("강의 목록 불러오기 실패:", err)
+    });
   }, []);
 
-  const handleAddLecture = () => {
-    if (!selectedLectureId || !selectedDay || !startTime || !endTime) return;
-    const alreadyExists = lectures.some(
-      (lec) => lec.lectureId === selectedLectureId);
-    if (alreadyExists) {
-      alert("이미 시간표에 추가된 강의입니다.");
-      return;
-    }
-    
-    const customTime = `${selectedDay} ${startTime}-${endTime}`;
-    const newLecture: Lecture = {
-      userId,
-      lectureId: selectedLectureId,
-      customTime,
-    };
-    setLectures([...lectures, newLecture]);
-    setSelectedLectureId(0);
-    setSelectedDay("");
-    setStartTime("")
-    setEndTime("");
+  const handleAddLecture = async () => {
+  if (!selectedLectureId || !selectedDay || !startTime || !endTime) return;
+
+  const alreadyExists = lectures.some(
+    (lec) => lec.lectureId === selectedLectureId
+  );
+  if (alreadyExists) {
+    alert("이미 시간표에 추가된 강의입니다.");
+    return;
+  }
+
+  const customTime = `${selectedDay} ${startTime}-${endTime}`;
+  const newLecture: Lecture = {
+    userId,
+    lectureId: selectedLectureId,
+    customTime,
   };
 
-  const handleDeleteLecture = (lectureId: number) => {
+  try {
+    const token = localStorage.getItem("token");
+    await fetch("http://localhost:8080/api/timetable/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(newLecture),
+    });
+
+    setLectures([...lectures, newLecture]); // 로컬 상태에도 반영
+    setSelectedLectureId(0);
+    setSelectedDay("");
+    setStartTime("");
+    setEndTime("");
+  } catch (err) {
+    console.error("시간표 추가 실패:", err);
+    alert("시간표 저장 중 오류가 발생했습니다.");
+  }
+};
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  fetch(`http://localhost:8080/api/timetable/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setLectures(data.lectures); // API 응답 형식에 따라 다를 수 있음
+    })
+    .catch((err) => {
+      console.error("시간표 불러오기 실패:", err);
+    });
+}, []);
+
+
+
+  const handleDeleteLecture = async (lectureId: number) => {
+  try {
+    const token = localStorage.getItem("token");
+    await fetch(`http://localhost:8080/api/timetable/${userId}/lecture/${lectureId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     setLectures(lectures.filter((lec) => lec.lectureId !== lectureId));
-  };
+  } catch (err) {
+    console.error("시간표에서 강의 삭제 실패:", err);
+    alert("삭제 중 오류가 발생했습니다.");
+  }
+};
+
 
   const renderBlocks = () => {
     return lectures.map((lec) => {
