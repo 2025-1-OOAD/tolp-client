@@ -122,41 +122,60 @@ export default function MyPage() {
               </TabsList>
 
               <TabsContent value="courses" className="mt-6">
-                <div className="space-y-6">
-                  {/* {myCourses.map((course) => (
-                    <Card key={course.id} className="border-purple-200">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <h3 className="text-lg font-semibold text-purple-900">{course.title}</h3>
-                              <Badge
-                                variant={course.status === "완료" ? "default" : "secondary"}
-                                className={
-                                  course.status === "완료" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                                }
-                              >
-                                {course.status}
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 mb-2">{course.instructor}</p>
-                            <p className="text-sm text-gray-500">수강 시작: {course.enrollDate}</p>
-                          </div>
-                          <div className="text-right">
-                            <Link href={`/courses/${course.id}`}>
-                              <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                                강의 보기
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {myCourses.map((course) => {
+                    const isInstructor = userInfo.role === 'INSTRUCTOR'
 
-                        
-                      </CardContent>
-                    </Card>
-                  ))} */}
+                    // 수강 종료일 계산 (수강 시작일 + 기간)
+                    let remainingDays = null
+                    if (!isInstructor && course.accessDeadline) {
+                      const today = new Date()
+                      const deadline = new Date(course.accessDeadline);
+                      remainingDays = Math.max(0, Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+                    }
+                    const courseTitle =
+                      isInstructor ? course.name ?? "강의명 없음" : course.lectureName ?? "강의명 없음";
+
+                    return (
+                      <Link href={`/lectures/${course.id}`} key={course.id}>
+                        <Card className="border-purple-200 hover:shadow-md transition cursor-pointer">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col items-center text-center">
+                              <Avatar className="h-16 w-16 mb-4">
+                                <AvatarImage src="/placeholder.svg" />
+                                <AvatarFallback className="bg-purple-100 text-purple-700 text-xl">
+                                  {course.name?.[0] ?? "강"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <p className="text-lg font-semibold text-purple-900">{courseTitle}</p>
+                              
+                              
+
+                              {isInstructor && course.createdAt && (
+                                <>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    개설일: {new Date(course.createdAt).toLocaleDateString()}
+                                  </p>
+                                </>
+                              )}
+
+                              {!isInstructor && remainingDays !== null && (
+                                <>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    남은 수강 기간: {remainingDays}일
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    )
+                  })}
                 </div>
               </TabsContent>
+
+
 
               
 
