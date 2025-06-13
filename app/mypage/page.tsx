@@ -31,34 +31,41 @@ export default function MyPage() {
   }
 
 
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.push("/login")
-      return
-    }
+ useEffect(() => {
+  const token = localStorage.getItem("token")
+  if (!token) {
+    router.push("/login")
+    return
+  }
 
-    axios
-      .get("http://localhost:8080/api/users/user-info", {
+  axios
+    .get(`http://localhost:8080/api/users/user-info`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      setUserInfo(res.data)
+
+      // ✅ 역할(role)에 따라 강의 요청 경로를 다르게 분기
+      const lectureApi =
+        res.data.role === 'INSTRUCTOR'
+          ? 'http://localhost:8080/api/lectures/my' // 강사일 경우
+          : 'http://localhost:8080/api/enrollments/myLectures' // 학생일 경우
+
+      return axios.get(lectureApi, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((res) => {
-        setUserInfo(res.data)
-      })
-      .catch((err) => {
-        console.error("유저 정보를 가져오지 못 했습니다.", err)
-        router.push("/login")
-      })
+    })
+    .then((res) => setMyCourses(res.data))
+    .catch((err) => {
+      console.error("유저 정보 또는 강의 정보 조회 실패", err)
+      router.push("/login")
+    })
+}, [])
 
-    axios
-      .get("http://localhost:8080/api/mylectures", {    // 내 강의 목록 엔드포인트 수정 필요
-        headers: {Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setMyCourses(res.data))
-      .catch((err) => console.error("강의 정보를 가져오지 못 했습니다.", err))
-  }, [])
 
   if (!userInfo) return null
 
@@ -116,7 +123,7 @@ export default function MyPage() {
 
               <TabsContent value="courses" className="mt-6">
                 <div className="space-y-6">
-                  {myCourses.map((course) => (
+                  {/* {myCourses.map((course) => (
                     <Card key={course.id} className="border-purple-200">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
@@ -147,7 +154,7 @@ export default function MyPage() {
                         
                       </CardContent>
                     </Card>
-                  ))}
+                  ))} */}
                 </div>
               </TabsContent>
 
