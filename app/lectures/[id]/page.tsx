@@ -165,7 +165,7 @@ export default function LectureDetailPage() {
           </Button>
         )}
 
-        {role === 'INSTRUCTOR' && isInstructorOfLecture && (
+        {role === 'INSTRUCTOR' && (
           <Card className="mb-8 border-purple-300">
             <CardHeader>
               <CardTitle className="text-lg">영상 업로드</CardTitle>
@@ -196,7 +196,7 @@ export default function LectureDetailPage() {
                 <CardTitle className="text-purple-900">{video.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                {(isEnrolled || isInstructorOfLecture ) ? (
+                {(isEnrolled || role === 'INSTRUCTOR' ) ? (
                   <iframe
                     src={video.videoUrl}
                     title={video.title}
