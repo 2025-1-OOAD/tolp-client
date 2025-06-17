@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { Trash } from 'lucide-react'
 
 interface Lecture {
   id: number
@@ -36,9 +37,6 @@ export default function LectureDetailPage() {
   const [newVideo, setNewVideo] = useState({ title: '', videoUrl: '' })
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [isInstructorOfLecture, setIsInstructorOfLecture] = useState(false)
-
-
-
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -80,7 +78,6 @@ export default function LectureDetailPage() {
     }
   }, [id])
 
-  // 수강 여부 확인
   useEffect(() => {
     const checkEnrollment = async () => {
       try {
@@ -98,15 +95,12 @@ export default function LectureDetailPage() {
     if (lecture) checkEnrollment()
   }, [lecture])
 
-
-  // 강사가 본인 강의인지 여부 확인
   useEffect(() => {
     if (lecture && instructorName) {
       setIsInstructorOfLecture(lecture.instructorName === instructorName)
     }
   }, [lecture, instructorName])
 
-  // 수강 신청 요청
   const handleEnroll = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -139,6 +133,23 @@ export default function LectureDetailPage() {
     } catch (err) {
       console.error('영상 업로드 실패:', err)
       alert('업로드 실패')
+    }
+  }
+
+  const handleDeleteVideo = async (videoId: number) => {
+    if (!confirm('정말로 이 영상을 삭제하시겠습니까?')) return;
+
+    try {
+      const token = localStorage.getItem('token')
+      await axios.delete(`http://localhost:8080/api/lecture-videos/${videoId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('영상이 삭제되었습니다.');
+      const res = await axios.get(`http://localhost:8080/api/lecture-videos/lecture/${id}`);
+      setVideos(res.data);
+    } catch (err) {
+      console.error('영상 삭제 실패:', err);
+      alert('삭제 실패');
     }
   }
 
@@ -199,9 +210,18 @@ export default function LectureDetailPage() {
           <h2 className="text-xl font-semibold text-purple-800">강의 영상 목록</h2>
           {videos.map((video) => (
             <Card key={video.id} className="border border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-purple-900">{video.title}</CardTitle>
-              </CardHeader>
+<CardHeader>
+  <div className="flex justify-between items-center w-full">
+    <CardTitle className="text-purple-900">{video.title}</CardTitle>
+    {isInstructorOfLecture && (
+      <Button variant="outline" size="icon" onClick={() => handleDeleteVideo(video.id)}>
+        <Trash className="w-4 h-4 text-red-600" />
+      </Button>
+    )}
+  </div>
+</CardHeader>
+
+
               <CardContent>
                 {(isEnrolled || isInstructorOfLecture ) ? (
                   <iframe
