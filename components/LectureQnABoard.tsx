@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -70,6 +70,20 @@ export default function LectureQnABoard({ lectureId }: Props) {
     }
   }
 
+  const handleDelete = async (qnaId: number) => {
+    const token = localStorage.getItem('token')
+    if (!confirm('정말 삭제하시겠습니까?')) return
+    try {
+      await axios.delete(`http://localhost:8080/api/qna/${qnaId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      alert('삭제되었습니다.')
+      fetchQnAs()
+    } catch (err) {
+      console.error('QnA 삭제 실패:', err)
+    }
+  }
+
   const parentQnAs = qnas.filter(q => q.parentId === null)
   const getReplies = (id: number) => qnas.filter(q => q.parentId === id)
 
@@ -89,9 +103,16 @@ export default function LectureQnABoard({ lectureId }: Props) {
       <div className="space-y-4">
         {parentQnAs.map(qna => (
           <div key={qna.id} className="p-4 border rounded bg-white">
-            <p className="font-semibold">{qna.writerName}</p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-semibold">{qna.writerName}</p>
+              <Button variant="outline" size="sm" onClick={() => handleDelete(qna.id)}>
+                삭제
+              </Button>
+            </div>
             <p>{qna.content}</p>
-            <p className="text-sm text-gray-400">{new Date(qna.createdAt).toLocaleString()}</p>
+            <p className="text-sm text-gray-400">
+              {new Date(qna.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+            </p>
 
             <Button
               size="sm"
@@ -102,7 +123,6 @@ export default function LectureQnABoard({ lectureId }: Props) {
               답글 달기
             </Button>
 
-            {/* 답글 입력창 */}
             {replyTargetId === qna.id && (
               <div className="mt-2 pl-4 space-y-2">
                 <Input
@@ -114,12 +134,16 @@ export default function LectureQnABoard({ lectureId }: Props) {
               </div>
             )}
 
-            {/* 대댓글 */}
             {getReplies(qna.id).length > 0 && (
               <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-2">
                 {getReplies(qna.id).map(reply => (
-                  <div key={reply.id} className="text-sm">
-                    <strong>{reply.writerName}</strong>: {reply.content}
+                  <div key={reply.id} className="text-sm flex justify-between items-center">
+                    <div>
+                      <strong>{reply.writerName}</strong>: {reply.content}
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(reply.id)}>
+                      삭제
+                    </Button>
                   </div>
                 ))}
               </div>
