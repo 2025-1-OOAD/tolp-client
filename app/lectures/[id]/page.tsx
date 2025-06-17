@@ -62,6 +62,18 @@ export default function LectureDetailPage() {
         setRole(payload.role || null)
         setInstructorName(payload.name || null)
       } else {
+
+
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        setRole(payload.role || null)
+        setInstructorName(payload.sub || null)
+      } catch (e) {
+        console.error('토큰 파싱 실패:', e)
         setRole(null)
         setInstructorName(null)
       }
@@ -93,6 +105,7 @@ export default function LectureDetailPage() {
     }
   }, [id])
 
+  // 수강 여부 확인
   useEffect(() => {
     const checkEnrollment = async () => {
       try {
@@ -110,6 +123,7 @@ export default function LectureDetailPage() {
     if (lecture) checkEnrollment()
   }, [lecture])
 
+
   useEffect(() => {
     if (lecture && instructorName) {
       setIsInstructorOfLecture(
@@ -118,6 +132,14 @@ export default function LectureDetailPage() {
     }
   }, [lecture, instructorName])
 
+  // 강사가 본인 강의인지 여부 확인
+  useEffect(() => {
+    if (lecture && instructorName) {
+      setIsInstructorOfLecture(lecture.instructorName === instructorName)
+    }
+  }, [lecture, instructorName])
+
+  // 수강 신청 요청
   const handleEnroll = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -240,6 +262,10 @@ export default function LectureDetailPage() {
 
               <CardContent>
                 {(isEnrolled || isInstructorOfLecture) ? (
+                <CardTitle className="text-purple-900">{video.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(isEnrolled || isInstructorOfLecture ) ? (
                   <iframe
                     src={video.videoUrl}
                     title={video.title}

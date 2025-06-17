@@ -1,4 +1,5 @@
 "use client"
+'use client'
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -70,6 +71,7 @@ export default function LectureQnABoard({ lectureId }: Props) {
     }
   }
 
+<<<<<<< develop
   const handleDelete = async (qnaId: number) => {
     const token = localStorage.getItem('token')
     if (!confirm('정말 삭제하시겠습니까?')) return
@@ -84,6 +86,8 @@ export default function LectureQnABoard({ lectureId }: Props) {
     }
   }
 
+=======
+>>>>>>> main
   const parentQnAs = qnas.filter(q => q.parentId === null)
   const getReplies = (id: number) => qnas.filter(q => q.parentId === id)
 
@@ -103,6 +107,7 @@ export default function LectureQnABoard({ lectureId }: Props) {
       <div className="space-y-4">
         {parentQnAs.map(qna => (
           <div key={qna.id} className="p-4 border rounded bg-white">
+<<<<<<< develop
             <div className="flex justify-between items-center mb-2">
               <p className="font-semibold">{qna.writerName}</p>
               <Button variant="outline" size="sm" onClick={() => handleDelete(qna.id)}>
@@ -113,6 +118,11 @@ export default function LectureQnABoard({ lectureId }: Props) {
             <p className="text-sm text-gray-400">
               {new Date(qna.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
             </p>
+=======
+            <p className="font-semibold">{qna.writerName}</p>
+            <p>{qna.content}</p>
+            <p className="text-sm text-gray-400">{new Date(qna.createdAt).toLocaleString()}</p>
+>>>>>>> main
 
             <Button
               size="sm"
@@ -123,6 +133,10 @@ export default function LectureQnABoard({ lectureId }: Props) {
               답글 달기
             </Button>
 
+<<<<<<< develop
+=======
+            {/* 답글 입력창 */}
+>>>>>>> main
             {replyTargetId === qna.id && (
               <div className="mt-2 pl-4 space-y-2">
                 <Input
@@ -134,6 +148,7 @@ export default function LectureQnABoard({ lectureId }: Props) {
               </div>
             )}
 
+<<<<<<< develop
             {getReplies(qna.id).length > 0 && (
               <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-2">
                 {getReplies(qna.id).map(reply => (
@@ -144,6 +159,14 @@ export default function LectureQnABoard({ lectureId }: Props) {
                     <Button variant="outline" size="sm" onClick={() => handleDelete(reply.id)}>
                       삭제
                     </Button>
+=======
+            {/* 대댓글 */}
+            {getReplies(qna.id).length > 0 && (
+              <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-2">
+                {getReplies(qna.id).map(reply => (
+                  <div key={reply.id} className="text-sm">
+                    <strong>{reply.writerName}</strong>: {reply.content}
+>>>>>>> main
                   </div>
                 ))}
               </div>
