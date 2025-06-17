@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { Trash } from 'lucide-react'
 
 interface Lecture {
   id: number
@@ -26,6 +27,22 @@ interface Video {
   postedAt: string
 }
 
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      }).join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    console.error("토큰 파싱 실패", e)
+    return null
+  }
+}
+
 export default function LectureDetailPage() {
   const { id } = useParams()
   const { isLoggedIn } = useAuth()
@@ -37,6 +54,14 @@ export default function LectureDetailPage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [isInstructorOfLecture, setIsInstructorOfLecture] = useState(false)
 
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      const payload = parseJwt(token)
+      if (payload) {
+        setRole(payload.role || null)
+        setInstructorName(payload.name || null)
+      } else {
 
 
 
@@ -99,6 +124,14 @@ export default function LectureDetailPage() {
   }, [lecture])
 
 
+  useEffect(() => {
+    if (lecture && instructorName) {
+      setIsInstructorOfLecture(
+        lecture.instructorName.trim() === instructorName.trim()
+      )
+    }
+  }, [lecture, instructorName])
+
   // 강사가 본인 강의인지 여부 확인
   useEffect(() => {
     if (lecture && instructorName) {
@@ -139,6 +172,23 @@ export default function LectureDetailPage() {
     } catch (err) {
       console.error('영상 업로드 실패:', err)
       alert('업로드 실패')
+    }
+  }
+
+  const handleDeleteVideo = async (videoId: number) => {
+    if (!confirm('정말로 이 영상을 삭제하시겠습니까?')) return;
+
+    try {
+      const token = localStorage.getItem('token')
+      await axios.delete(`http://localhost:8080/api/lecture-videos/${videoId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      alert('영상이 삭제되었습니다.')
+      const res = await axios.get(`http://localhost:8080/api/lecture-videos/lecture/${id}`)
+      setVideos(res.data)
+    } catch (err) {
+      console.error('영상 삭제 실패:', err)
+      alert('삭제 실패')
     }
   }
 
@@ -200,6 +250,18 @@ export default function LectureDetailPage() {
           {videos.map((video) => (
             <Card key={video.id} className="border border-purple-200">
               <CardHeader>
+                <div className="flex justify-between items-center w-full">
+                  <CardTitle className="text-purple-900">{video.title}</CardTitle>
+                  {isInstructorOfLecture && (
+                    <Button variant="outline" size="icon" onClick={() => handleDeleteVideo(video.id)}>
+                      <Trash className="w-4 h-4 text-red-600" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                {(isEnrolled || isInstructorOfLecture) ? (
                 <CardTitle className="text-purple-900">{video.title}</CardTitle>
               </CardHeader>
               <CardContent>
