@@ -27,6 +27,22 @@ interface Video {
   postedAt: string
 }
 
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      }).join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    console.error("토큰 파싱 실패", e)
+    return null
+  }
+}
+
 export default function LectureDetailPage() {
   const { id } = useParams()
   const { isLoggedIn } = useAuth()
@@ -41,12 +57,11 @@ export default function LectureDetailPage() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
+      const payload = parseJwt(token)
+      if (payload) {
         setRole(payload.role || null)
-        setInstructorName(payload.sub || null)
-      } catch (e) {
-        console.error('토큰 파싱 실패:', e)
+        setInstructorName(payload.name || null)
+      } else {
         setRole(null)
         setInstructorName(null)
       }
@@ -97,7 +112,9 @@ export default function LectureDetailPage() {
 
   useEffect(() => {
     if (lecture && instructorName) {
-      setIsInstructorOfLecture(lecture.instructorName === instructorName)
+      setIsInstructorOfLecture(
+        lecture.instructorName.trim() === instructorName.trim()
+      )
     }
   }, [lecture, instructorName])
 
@@ -143,13 +160,13 @@ export default function LectureDetailPage() {
       const token = localStorage.getItem('token')
       await axios.delete(`http://localhost:8080/api/lecture-videos/${videoId}`, {
         headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('영상이 삭제되었습니다.');
-      const res = await axios.get(`http://localhost:8080/api/lecture-videos/lecture/${id}`);
-      setVideos(res.data);
+      })
+      alert('영상이 삭제되었습니다.')
+      const res = await axios.get(`http://localhost:8080/api/lecture-videos/lecture/${id}`)
+      setVideos(res.data)
     } catch (err) {
-      console.error('영상 삭제 실패:', err);
-      alert('삭제 실패');
+      console.error('영상 삭제 실패:', err)
+      alert('삭제 실패')
     }
   }
 
@@ -210,20 +227,19 @@ export default function LectureDetailPage() {
           <h2 className="text-xl font-semibold text-purple-800">강의 영상 목록</h2>
           {videos.map((video) => (
             <Card key={video.id} className="border border-purple-200">
-<CardHeader>
-  <div className="flex justify-between items-center w-full">
-    <CardTitle className="text-purple-900">{video.title}</CardTitle>
-    {isInstructorOfLecture && (
-      <Button variant="outline" size="icon" onClick={() => handleDeleteVideo(video.id)}>
-        <Trash className="w-4 h-4 text-red-600" />
-      </Button>
-    )}
-  </div>
-</CardHeader>
-
+              <CardHeader>
+                <div className="flex justify-between items-center w-full">
+                  <CardTitle className="text-purple-900">{video.title}</CardTitle>
+                  {isInstructorOfLecture && (
+                    <Button variant="outline" size="icon" onClick={() => handleDeleteVideo(video.id)}>
+                      <Trash className="w-4 h-4 text-red-600" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
 
               <CardContent>
-                {(isEnrolled || isInstructorOfLecture ) ? (
+                {(isEnrolled || isInstructorOfLecture) ? (
                   <iframe
                     src={video.videoUrl}
                     title={video.title}
